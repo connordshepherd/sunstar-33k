@@ -137,7 +137,7 @@
 
 .usermessagewaiting{
   padding: 1.5rem;
-  color: #ECECF1;
+  color: #000;
   background: linear-gradient(to left, #f5f8f9, #f5f8f9, #ecedee);
   background-size: 200% 200%;
   background-position: -100% 0;
