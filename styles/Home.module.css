@@ -67,7 +67,7 @@
   width: 75vw;
   border-radius: 0.5rem;
   border: 1px solid #30373d;
-  background: #0e1524;
+  background: #343d48;
   color: #ECECF1;
   outline: none;
 }
@@ -130,7 +130,7 @@
 }
 
 .usermessage {
-  background: #0e1524;
+  background: #fff;
   padding: 1.5rem;
   color: #ECECF1;
 }
@@ -156,7 +156,7 @@
 }
 
 .apimessage {
-  background: #1d2333;
+  background: #fff;
   padding: 1.5rem;
   color: #ECECF1;
   animation: fadein 0.5s;
