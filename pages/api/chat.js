@@ -27,19 +27,19 @@ export default async function handler(req, res) {
       return res.status(fetchResponse.status).json({ message: `Received status ${fetchResponse.status} from Baseplate.` });
     }
 
-    // If everything went well, return a success message
-    return res.status(200).json({ message: 'Fetch successful, but not processed' });
-
-    /* 
-    // Commenting out the streaming and parsing logic for now
-    const encoder = new TextEncoder();
-    const decoder = new TextDecoder();
-
+    // Simple stream to test if Vercel handles streaming properly
     const stream = new ReadableStream({
-      // ... (the rest of your original code for streaming)
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode("Testing streaming response."));
+        controller.close();
+      },
     });
 
     return new Response(stream, { headers: { 'Content-Type': 'text/plain' } });
+
+    /* 
+    // Commenting out the streaming and parsing logic for now
+    // (the rest of your original code for streaming)
     */
 
   } catch (error) {
