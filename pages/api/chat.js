@@ -5,10 +5,7 @@ function passthroughStream() {
   return data => data;
 }
 
-export function BaseplateStream(
-  res: Response,
-  cb?: AIStreamCallbacks
-): ReadableStream {
+function BaseplateStream(res, cb) {
   return AIStream(res, passthroughStream(), cb);
 }
 
