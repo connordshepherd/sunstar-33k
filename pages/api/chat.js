@@ -28,18 +28,14 @@ export default async function handler(req, res) {
       return res.status(fetchResponse.status).json({ message: `Received status ${fetchResponse.status} from Baseplate.` });
     }
 
-    // Create a simple Node.js pass-through stream
+    // Use a pass-through stream to pipe the Baseplate response directly
     const stream = new PassThrough();
 
-    // Send the initial headers to the client
+    // Set the response headers
     res.writeHead(200, { 'Content-Type': 'text/plain' });
 
-    // Use the Node.js stream to send a response
-    stream.write("Testing streaming response.");
-    stream.end();
-
-    // Pipe the stream to the response
-    stream.pipe(res);
+    // Pipe the Baseplate response through the pass-through stream and to the response
+    fetchResponse.body.pipe(stream).pipe(res);
 
   } catch (error) {
     return res.status(500).json({ message: `Error in handler: ${error.message}` });
