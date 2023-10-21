@@ -1,4 +1,5 @@
 import { AIStream } from 'ai';
+import { Readable } from 'stream';
 
 // Simple passthrough parser - just returns the chunk as is.
 function passthroughStream() {
