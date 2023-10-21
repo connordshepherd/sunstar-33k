@@ -1,4 +1,5 @@
 import { createParser } from "eventsource-parser";
+import { PassThrough } from 'stream';
 
 export default async function handler(req, res) {
   try {
@@ -27,20 +28,18 @@ export default async function handler(req, res) {
       return res.status(fetchResponse.status).json({ message: `Received status ${fetchResponse.status} from Baseplate.` });
     }
 
-    // Simple stream to test if Vercel handles streaming properly
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(new TextEncoder().encode("Testing streaming response."));
-        controller.close();
-      },
-    });
+    // Create a simple Node.js pass-through stream
+    const stream = new PassThrough();
 
-    return new Response(stream, { headers: { 'Content-Type': 'text/plain' } });
+    // Send the initial headers to the client
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
 
-    /* 
-    // Commenting out the streaming and parsing logic for now
-    // (the rest of your original code for streaming)
-    */
+    // Use the Node.js stream to send a response
+    stream.write("Testing streaming response.");
+    stream.end();
+
+    // Pipe the stream to the response
+    stream.pipe(res);
 
   } catch (error) {
     return res.status(500).json({ message: `Error in handler: ${error.message}` });
