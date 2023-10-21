@@ -2,12 +2,10 @@
 import { AIStream, AIStreamParser, AIStreamCallbacks } from 'ai'; // Adjust import path as needed
 
 // Custom parser function for Baseplate
-function parseBaseplateStream(): AIStreamParser {
-  return data => {
-    // Assuming Baseplate returns plain text chunks
-    return data;
-  };
-}
+const parseBaseplateStream: AIStreamParser = (data) => {
+  // Assuming Baseplate returns plain text chunks
+  return data;
+};
 
 export default async function handler(req, res) {
   try {
@@ -41,7 +39,7 @@ export default async function handler(req, res) {
     res.statusCode = 200;
 
     // Use AIStream with your custom parser
-    const baseplateStream = AIStream(fetchResponse, parseBaseplateStream(), {
+    const baseplateStream = AIStream(fetchResponse, parseBaseplateStream, {
       onStart: async () => {
         console.log('Stream started');
       },
