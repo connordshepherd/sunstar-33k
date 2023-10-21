@@ -1,4 +1,3 @@
-import { createParser } from "eventsource-parser";
 import { PassThrough } from 'stream';
 
 export default async function handler(req, res) {
@@ -34,22 +33,15 @@ export default async function handler(req, res) {
     }
 
     // Collect a portion of the Baseplate response to log
-    const buffer = await fetchResponse.body.read();
-    if (buffer.value) {
-      console.log("Received from Baseplate:", new TextDecoder().decode(buffer.value));
+    let chunk = await fetchResponse.body.read();
+    if (chunk.value) {
+      console.log("Received from Baseplate:", new TextDecoder().decode(chunk.value));
     } else {
       console.log("No data received from Baseplate");
     }
 
     // Return early to see if the function gets this far
     return res.status(200).json({ message: "Got till here!" });
-
-    // The below code is commented out for now
-    /*
-    const stream = new PassThrough();
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    fetchResponse.body.pipe(stream).pipe(res);
-    */
 
   } catch (error) {
     console.error("Error in function:", error.message);
