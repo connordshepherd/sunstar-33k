@@ -32,13 +32,15 @@ export default async function handler(req, res) {
       return res.status(fetchResponse.status).json({ message: `Received status ${fetchResponse.status} from Baseplate.` });
     }
 
-    // Collect a portion of the Baseplate response to log
-    let chunk = await fetchResponse.body.read();
-    if (chunk.value) {
-      console.log("Received from Baseplate:", new TextDecoder().decode(chunk.value));
-    } else {
-      console.log("No data received from Baseplate");
+    // Try to grab a chunk of data from the stream and log it
+    let chunks = [];
+    for await (const chunk of fetchResponse.body) {
+      chunks.push(chunk);
+      if (chunks.length > 1) break;  // we only want to accumulate a few chunks
     }
+
+    const buffer = Buffer.concat(chunks);
+    console.log("Received from Baseplate:", buffer.toString('utf-8'));
 
     // Return early to see if the function gets this far
     return res.status(200).json({ message: "Got till here!" });
