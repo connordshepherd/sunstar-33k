@@ -1,17 +1,12 @@
 import { createParser } from "eventsource-parser";
 
 export default async function handler(req, res) {
-  console.log("API handler started."); // Debugging statement
-
-  if (req.method !== 'POST') {
-    console.log("Method not POST."); // Debugging statement
-    return res.status(405).end();
-  }
-
-  const { messages } = req.body;
-
   try {
-    console.log("Sending request to Baseplate."); // Debugging statement
+    if (req.method !== 'POST') {
+      return res.status(405).json({ message: 'Method not POST' });
+    }
+
+    const { messages } = req.body;
 
     const fetchResponse = await fetch(process.env.BASEPLATE_ENDPOINT, {
       method: 'POST',
@@ -25,7 +20,9 @@ export default async function handler(req, res) {
       }),
     });
 
-    console.log("Received response from Baseplate. Status:", fetchResponse.status); // Debugging statement
+    if (!fetchResponse.ok) {
+      return res.status(fetchResponse.status).json({ message: `Received status ${fetchResponse.status} from Baseplate.` });
+    }
 
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
@@ -34,33 +31,28 @@ export default async function handler(req, res) {
       async start(controller) {
         function onParse(event) {
           if (event.type === "event") {
-              const data = event.data;
-              console.log("Data received from Baseplate:", data); // Debugging statement
-      
-              if (data === "[DONE]") {
-                  console.log("Data DONE. Closing stream."); // Debugging statement
-                  controller.close();
-                  return;
-              }
-      
-              try {
-                  const json = JSON.parse(data);
-      
-                  if (!json.choices || json.choices.length === 0) {
-                      console.error("Unexpected data structure:", json);
-                      return;
-                  }
-      
-                  const text = json.choices[0]?.delta?.content || "";
-                  const queue = encoder.encode(text);
-                  controller.enqueue(queue);
-              } catch (e) {
-                  console.error('Error parsing data:', e);
-                  controller.error(e);
-              }
-          }
-      }
+            const data = event.data;
 
+            if (data === "[DONE]") {
+                controller.close();
+                return;
+            }
+
+            try {
+                const json = JSON.parse(data);
+
+                if (!json.choices || json.choices.length === 0) {
+                    throw new Error('Unexpected data structure');
+                }
+
+                const text = json.choices[0]?.delta?.content || "";
+                const queue = encoder.encode(text);
+                controller.enqueue(queue);
+            } catch (e) {
+                throw e;
+            }
+          }
+        }
 
         const parser = createParser(onParse);
         for await (const chunk of fetchResponse.body) {
@@ -68,12 +60,10 @@ export default async function handler(req, res) {
         }
       },
     });
-    
-    console.log("Returning response stream."); // Debugging statement
+
     return new Response(stream, { headers: { 'Content-Type': 'text/plain' } });
 
   } catch (error) {
-    console.error('Error querying Baseplate:', error);
-    return res.status(500).json({ error: 'Error querying Baseplate' });
+    return res.status(500).json({ message: `Error in handler: ${error.message}` });
   }
 }
