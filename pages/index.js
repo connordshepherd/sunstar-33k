@@ -38,42 +38,61 @@ export default function Home() {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (userInput.trim() === "") {
       return;
     }
-
+  
     setLoading(true);
     const context = [...messages, { role: "user", content: userInput }];
     setMessages(context);
-
-    // Send chat history to API
-    const response = await fetch("/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ messages: context }),
-    });
-
-    if (!response.ok) {
+  
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ messages: context }),
+      });
+  
+      if (!response.ok) {
+        handleError();
+        return;
+      }
+  
+      const stream = response.body;
+      if (!stream) {
+        return;
+      }
+    
+      const reader = stream.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedResponse = ""; // Accumulate the chunks here
+      let done = false;
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        
+        if (value) {
+          const chunkValue = decoder.decode(value);
+          accumulatedResponse += chunkValue;
+        }
+      }
+  
+      if (accumulatedResponse.trim()) {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { role: "assistant", content: accumulatedResponse.trim() }
+        ]);
+      }
+  
+      setLoading(false);
+    } catch (error) {
       handleError();
-      return;
     }
-
-    // Reset user input
-    setUserInput("");
-
-const data = await response.json();
-const assistantMessage = data.choices[0].message.content;
-   
-    setMessages((messages) => [
-  ...messages,
-  { role: "assistant", content: assistantMessage },
-]);
-    setLoading(false);
-
   };
+
 
   // Prevent blank submissions and allow for multiline input
   const handleEnter = (e) => {
