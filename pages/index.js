@@ -29,7 +29,7 @@ export default function Home() {
 
   // Handle errors
   const handleError = () => {
-    setMessages((prevMessages) => [...prevMessages, { role: "assistant", content: data.choices[0].text.trim() }]);
+    setMessages((prevMessages) => [...prevMessages, { role: "assistant", content: "Sorry, an error occurred. Please try again." }]);
 
     setLoading(false);
     setUserInput("");
