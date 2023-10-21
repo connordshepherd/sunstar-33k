@@ -2,12 +2,14 @@ import { createParser } from "eventsource-parser";
 
 export default async function handler(req, res) {
   try {
+    // Ensure it's a POST request
     if (req.method !== 'POST') {
       return res.status(405).json({ message: 'Method not POST' });
     }
 
     const { messages } = req.body;
 
+    // Fetch request to Baseplate
     const fetchResponse = await fetch(process.env.BASEPLATE_ENDPOINT, {
       method: 'POST',
       headers: {
@@ -20,48 +22,25 @@ export default async function handler(req, res) {
       }),
     });
 
+    // If fetchResponse is not OK, return the HTTP status we got from Baseplate
     if (!fetchResponse.ok) {
       return res.status(fetchResponse.status).json({ message: `Received status ${fetchResponse.status} from Baseplate.` });
     }
 
+    // If everything went well, return a success message
+    return res.status(200).json({ message: 'Fetch successful, but not processed' });
+
+    /* 
+    // Commenting out the streaming and parsing logic for now
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
 
     const stream = new ReadableStream({
-      async start(controller) {
-        function onParse(event) {
-          if (event.type === "event") {
-            const data = event.data;
-
-            if (data === "[DONE]") {
-                controller.close();
-                return;
-            }
-
-            try {
-                const json = JSON.parse(data);
-
-                if (!json.choices || json.choices.length === 0) {
-                    throw new Error('Unexpected data structure');
-                }
-
-                const text = json.choices[0]?.delta?.content || "";
-                const queue = encoder.encode(text);
-                controller.enqueue(queue);
-            } catch (e) {
-                throw e;
-            }
-          }
-        }
-
-        const parser = createParser(onParse);
-        for await (const chunk of fetchResponse.body) {
-          parser.feed(decoder.decode(chunk));
-        }
-      },
+      // ... (the rest of your original code for streaming)
     });
 
     return new Response(stream, { headers: { 'Content-Type': 'text/plain' } });
+    */
 
   } catch (error) {
     return res.status(500).json({ message: `Error in handler: ${error.message}` });
