@@ -1,4 +1,13 @@
-import { PassThrough } from 'stream';
+// Required imports
+import { AIStream, AIStreamParser, AIStreamCallbacks } from 'ai'; // Adjust import path as needed
+
+// Custom parser function for Baseplate
+function parseBaseplateStream(): AIStreamParser {
+  return data => {
+    // Assuming Baseplate returns plain text chunks
+    return data;
+  };
+}
 
 export default async function handler(req, res) {
   try {
@@ -31,14 +40,23 @@ export default async function handler(req, res) {
     res.setHeader('Content-Type', 'text/plain');
     res.statusCode = 200;
 
-    // Send chunks as they arrive
-    for await (const chunk of fetchResponse.body) {
-      res.write(chunk);
-      // Introduce a delay for testing; remove this in production
-      await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
-    }
+    // Use AIStream with your custom parser
+    const baseplateStream = AIStream(fetchResponse, parseBaseplateStream(), {
+      onStart: async () => {
+        console.log('Stream started');
+      },
+      onCompletion: async completion => {
+        res.write(completion);
+      },
+      onFinal: async completion => {
+        console.log('Stream completed', completion);
+        res.end();
+      },
+      // Assuming Baseplate doesn't return tokenized data
+      // onToken: async token => {},
+    });
 
-    res.end();
+    // The readable stream (baseplateStream) will handle data processing and streaming
 
   } catch (error) {
     return res.status(500).json({ message: `Error in handler: ${error.message}` });
