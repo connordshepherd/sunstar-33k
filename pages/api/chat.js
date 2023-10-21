@@ -1,22 +1,8 @@
 import { AIStream } from 'ai';
-import { Readable } from 'stream';
 
 // Simple passthrough parser - just returns the chunk as is.
 function passthroughStream() {
     return data => data;
-}
-
-function StreamingTextResponse(stream) {
-    // Construct and return a readable stream from the given stream
-    const readable = new Readable({
-        async read() {
-            for await (const chunk of stream) {
-                this.push(chunk);
-            }
-            this.push(null);
-        }
-    });
-    return readable;
 }
 
 export default async function handler(req, res) {
@@ -58,8 +44,8 @@ export default async function handler(req, res) {
             },
         });
 
-        // Return the StreamingTextResponse
-        return StreamingTextResponse(stream);
+        // Directly return the stream wrapped in a Response object
+        return new Response(stream);
 
     } catch (error) {
         console.log(`Error in handler: ${error.message}`);
