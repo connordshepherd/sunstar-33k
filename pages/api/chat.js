@@ -1,7 +1,7 @@
-import { AIStream, type AIStreamParser, type AIStreamCallbacks } from 'ai';
+import { AIStream } from 'ai';
 
 // Simple passthrough parser - just returns the chunk as is.
-function passthroughStream(): AIStreamParser {
+function passthroughStream() {
   return data => data;
 }
 
