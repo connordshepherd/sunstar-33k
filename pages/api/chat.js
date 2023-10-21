@@ -22,26 +22,23 @@ export default async function handler(req, res) {
       }),
     });
 
-    // If fetchResponse is not OK, return the HTTP status we got from Baseplate
     if (!fetchResponse.ok) {
       return res.status(fetchResponse.status).json({ message: `Received status ${fetchResponse.status} from Baseplate.` });
     }
 
-    // Create a pass-through stream to send data to the client
-    const stream = new PassThrough();
+    // Set headers for streaming
+    res.setHeader('Transfer-Encoding', 'chunked');
+    res.setHeader('Content-Type', 'text/plain');
+    res.statusCode = 200;
 
-    // Send the initial headers to the client
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-
-    // Loop through chunks from Baseplate and send to client using pass-through stream
+    // Send chunks as they arrive
     for await (const chunk of fetchResponse.body) {
-      stream.write(chunk);
+      res.write(chunk);
+      // Introduce a delay for testing; remove this in production
+      await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
     }
 
-    stream.end();
-
-    // Pipe the stream to the response
-    stream.pipe(res);
+    res.end();
 
   } catch (error) {
     return res.status(500).json({ message: `Error in handler: ${error.message}` });
