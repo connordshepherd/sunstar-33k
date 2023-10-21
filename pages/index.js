@@ -35,19 +35,20 @@ export default function Home() {
     setUserInput("");
   }
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (userInput.trim() === "") {
-    return;
-  }
+    if (userInput.trim() === "") {
+      return;
+    }
 
-  setLoading(true);
-  const context = [...messages, { role: "user", content: userInput }];
-  setMessages(context);
+    setLoading(true);
+    const context = [...messages, { role: "user", content: userInput }];
+    setMessages(context);
 
-  try {
-    const res = await fetch("/api/chat", {
+    // Send chat history to API
+    const response = await fetch("/api/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -55,29 +56,13 @@ const handleSubmit = async (e) => {
       body: JSON.stringify({ messages: context }),
     });
 
-    if (!res.ok) {
+    if (!response.ok) {
       handleError();
       return;
     }
 
-    const stream = res.body;
-    const reader = stream.getReader();
-    const decoder = new TextDecoder();
-    let done = false;
-    while (!done) {
-      const { value, done: doneReading } = await reader.read();
-      done = doneReading;
-      const chunkValue = decoder.decode(value);
-      if(chunkValue) {
-        setMessages((prevMessages) => [...prevMessages, { role: "assistant", content: chunkValue.trim() }]);
-      }
-    }
-    setLoading(false);
+    // Reset user input
     setUserInput("");
-  } catch (error) {
-    handleError();
-  }
-};
 
 const data = await response.json();
 const assistantMessage = data.choices[0].message.content;
