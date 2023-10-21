@@ -34,26 +34,33 @@ export default async function handler(req, res) {
       async start(controller) {
         function onParse(event) {
           if (event.type === "event") {
-            const data = event.data;
-            console.log("Data received from Baseplate:", data); // Debugging statement
-
-            if (data === "[DONE]") {
-              console.log("Data DONE. Closing stream."); // Debugging statement
-              controller.close();
-              return;
-            }
-
-            try {
-              const json = JSON.parse(data);
-              const text = json.choices[0]?.delta?.content || "";
-              const queue = encoder.encode(text);
-              controller.enqueue(queue);
-            } catch (e) {
-              console.error('Error parsing data:', e);
-              controller.error(e);
-            }
+              const data = event.data;
+              console.log("Data received from Baseplate:", data); // Debugging statement
+      
+              if (data === "[DONE]") {
+                  console.log("Data DONE. Closing stream."); // Debugging statement
+                  controller.close();
+                  return;
+              }
+      
+              try {
+                  const json = JSON.parse(data);
+      
+                  if (!json.choices || json.choices.length === 0) {
+                      console.error("Unexpected data structure:", json);
+                      return;
+                  }
+      
+                  const text = json.choices[0]?.delta?.content || "";
+                  const queue = encoder.encode(text);
+                  controller.enqueue(queue);
+              } catch (e) {
+                  console.error('Error parsing data:', e);
+                  controller.error(e);
+              }
           }
-        }
+      }
+
 
         const parser = createParser(onParse);
         for await (const chunk of fetchResponse.body) {
