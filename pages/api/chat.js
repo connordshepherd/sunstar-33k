@@ -33,14 +33,16 @@ export default async function handler(req, res) {
             }
             try {
               const json = JSON.parse(data);
-              const text = json.choices[0]?.content || json.choices[0]?.text || "";
+              const text = json.choices[0]?.delta?.content || "";
               const queue = encoder.encode(text);
               controller.enqueue(queue);
             } catch (e) {
+              console.error('Error parsing data:', e);
               controller.error(e);
             }
           }
         }
+
 
         const parser = createParser(onParse);
         for await (const chunk of fetchResponse.body) {
