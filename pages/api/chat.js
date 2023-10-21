@@ -29,8 +29,19 @@ export default async function handler(req, res) {
     res.setHeader('Content-Type', 'text/plain');
     res.statusCode = 200;
 
-    // Pipe the stream directly to the response
-    fetchResponse.body.pipe(res);
+    // Remove Content-Length header if present
+    if (res.hasHeader('Content-Length')) {
+      res.removeHeader('Content-Length');
+    }
+
+    // Send chunks as they arrive
+    for await (const chunk of fetchResponse.body) {
+      res.write(chunk);
+      // Introduce a delay for testing; remove this in production
+      await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
+    }
+
+    res.end();
 
   } catch (error) {
     return res.status(500).json({ message: `Error in handler: ${error.message}` });
