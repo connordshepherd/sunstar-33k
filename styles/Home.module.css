@@ -254,12 +254,11 @@
 
   .main {
     padding: 1rem;
-    max-height: 90vh;
   }
 
   .cloud {
     width: 22rem;
-    height: 28rem;
+    height: 85vh;
   }
   .textarea {
     width: 22rem;
