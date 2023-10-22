@@ -45,7 +45,7 @@ export default function Home() {
 
   setLoading(true);
   const userMessage = { role: "user", content: userInput };
-  const placeholderAssistantMessage = { role: "assistant", content: "...loading" };
+  const placeholderAssistantMessage = { role: "assistant", content: "Asking the AI..." };
 
   setMessages((prevMessages) => [
     ...prevMessages,
