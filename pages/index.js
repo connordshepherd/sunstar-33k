@@ -47,25 +47,26 @@ export default function Home() {
     const context = [...messages, { role: "user", content: userInput }];
     setMessages(context);
 
-    try {
+    try {  
       const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ messages: context }),
-      });
-
-      if (!response.ok) {
-        handleError();
-        return;
-      }
-
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ messages: context }),
+          });
+    
+          if (!response.ok) {
+            handleError();
+            return;
+          }
+    
       const stream = response.body;
       if (!stream) {
+        console.error("No response body received from API."); // Log an error if no stream is present
         return;
       }
-
+    
       const reader = stream.getReader();
       const decoder = new TextDecoder();
       let accumulatedResponse = ""; // Accumulate the chunks here
@@ -74,32 +75,37 @@ export default function Home() {
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
-
+    
         if (value) {
           const chunkValue = decoder.decode(value);
           accumulatedResponse += chunkValue;
-
+    
+          console.log("Received chunk:", chunkValue); // Log each chunk received
+    
           const parsedChunk = JSON.parse(chunkValue.split("\n").filter(Boolean)[0]); // Parse each chunk
           if (parsedChunk && parsedChunk.choices && parsedChunk.choices[0] && parsedChunk.choices[0].delta && parsedChunk.choices[0].delta.content) {
             assistantResponse += parsedChunk.choices[0].delta.content;
           }
-
+    
           // If the finish_reason is "stop", we know that the assistant is done with its response
           if (parsedChunk && parsedChunk.choices && parsedChunk.choices[0] && parsedChunk.choices[0].delta && parsedChunk.choices[0].finish_reason === "stop") {
             break;
           }
         }
       }
-
+    
+      console.log("Complete assistant response:", assistantResponse); // Log the concatenated assistant response
+    
       if (assistantResponse.trim()) {
         setMessages((prevMessages) => [
           ...prevMessages,
           { role: "assistant", content: assistantResponse.trim() }
         ]);
       }
-
+    
       setLoading(false);
     } catch (error) {
+      console.error("Error during API fetch:", error); // Log any errors during fetch
       handleError();
     }
   };
