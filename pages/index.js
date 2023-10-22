@@ -38,15 +38,15 @@ export default function Home() {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (userInput.trim() === "") {
       return;
     }
-  
+
     setLoading(true);
     const context = [...messages, { role: "user", content: userInput }];
     setMessages(context);
-  
+
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -55,44 +55,54 @@ export default function Home() {
         },
         body: JSON.stringify({ messages: context }),
       });
-  
+
       if (!response.ok) {
         handleError();
         return;
       }
-  
+
       const stream = response.body;
       if (!stream) {
         return;
       }
-    
+
       const reader = stream.getReader();
       const decoder = new TextDecoder();
       let accumulatedResponse = ""; // Accumulate the chunks here
+      let assistantResponse = ""; // To accumulate the assistant's response
       let done = false;
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
-        
+
         if (value) {
           const chunkValue = decoder.decode(value);
           accumulatedResponse += chunkValue;
+
+          const parsedChunk = JSON.parse(chunkValue.split("\n").filter(Boolean)[0]); // Parse each chunk
+          if (parsedChunk && parsedChunk.choices && parsedChunk.choices[0] && parsedChunk.choices[0].delta && parsedChunk.choices[0].delta.content) {
+            assistantResponse += parsedChunk.choices[0].delta.content;
+          }
+
+          // If the finish_reason is "stop", we know that the assistant is done with its response
+          if (parsedChunk && parsedChunk.choices && parsedChunk.choices[0] && parsedChunk.choices[0].delta && parsedChunk.choices[0].finish_reason === "stop") {
+            break;
+          }
         }
       }
-  
-      if (accumulatedResponse.trim()) {
+
+      if (assistantResponse.trim()) {
         setMessages((prevMessages) => [
           ...prevMessages,
-          { role: "assistant", content: accumulatedResponse.trim() }
+          { role: "assistant", content: assistantResponse.trim() }
         ]);
       }
-  
+
       setLoading(false);
     } catch (error) {
       handleError();
     }
   };
-
 
   // Prevent blank submissions and allow for multiline input
   const handleEnter = (e) => {
@@ -116,23 +126,20 @@ export default function Home() {
       <main className={styles.main}>
         <div className={styles.cloud}>
           <div ref={messageListRef} className={styles.messagelist}>
-            {messages.map((message, index) => {
-              return (
-                // The latest message sent by the user will be animated while waiting for a response
-                <div key={index} className={message.role === "user" && loading && index === messages.length - 1 ? styles.usermessagewaiting : message.role === "assistant" ? styles.apimessage : styles.usermessage}>
-                  {/* Display the correct icon depending on the message type */}
-                  {message.role === "assistant" ? <Image src="/openai.png" alt="AI" width="30" height="30" className={styles.boticon} priority={true} /> : <Image src="/usericon.png" alt="Me" width="30" height="30" className={styles.usericon} priority={true} />}
-                  <div className={styles.markdownanswer}>
-                    {/* Messages are being rendered in Markdown format */}
-                    <ReactMarkdown linkTarget={"_blank"}>{message.content}</ReactMarkdown>
-                  </div>
+            {messages.map((message, index) => (
+              <div key={index} className={message.role === "user" && loading && index === messages.length - 1 ? styles.usermessagewaiting : message.role === "assistant" ? styles.apimessage : styles.usermessage}>
+                {/* Display the correct icon depending on the message type */}
+                {message.role === "assistant" ? 
+                  <Image src="/openai.png" alt="AI" width="30" height="30" className={styles.boticon} priority={true} /> 
+                  : <Image src="/usericon.png" alt="Me" width="30" height="30" className={styles.usericon} priority={true} />}
+                <div className={styles.markdownanswer}>
+                  <ReactMarkdown linkTarget={"_blank"}>{message.content}</ReactMarkdown>
                 </div>
-              )
-            })}
+              </div>
+            ))}
           </div>
         </div>
         <div className={styles.center}>
-
           <div className={styles.cloudform}>
             <form onSubmit={handleSubmit}>
               <textarea
@@ -156,7 +163,6 @@ export default function Home() {
                 className={styles.generatebutton}
               >
                 {loading ? <div className={styles.loadingwheel}><CircularProgress color="inherit" size={20} /> </div> :
-                  // Send icon SVG in input field
                   <svg viewBox='0 0 20 20' className={styles.svgicon} xmlns='http://www.w3.org/2000/svg'>
                     <path d='M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z'></path>
                   </svg>}
