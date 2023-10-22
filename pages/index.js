@@ -44,16 +44,22 @@ export default function Home() {
   }
 
   setLoading(true);
-  const context = [...messages, { role: "user", content: userInput }];
-  setMessages(context);
+  const userMessage = { role: "user", content: userInput };
+  const placeholderAssistantMessage = { role: "assistant", content: "...loading" };
 
-  try {
+  setMessages((prevMessages) => [
+    ...prevMessages,
+    userMessage,
+    placeholderAssistantMessage
+  ]);
+
+  try {  
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ messages: context }),
+      body: JSON.stringify({ messages: [...messages, userMessage] }),
     });
 
     if (!response.ok) {
@@ -69,27 +75,29 @@ export default function Home() {
 
     const reader = stream.getReader();
     const decoder = new TextDecoder();
-    let accumulatedResponse = ""; // Accumulate the chunks here
+    let currentAssistantResponse = ""; // Initialize the response here
     let done = false;
     while (!done) {
       const { value, done: doneReading } = await reader.read();
       done = doneReading;
-
+  
       if (value) {
         const chunkValue = decoder.decode(value);
-        accumulatedResponse += chunkValue;
-        console.log("Received chunk:", chunkValue); // Log each chunk received
+        currentAssistantResponse += chunkValue;
 
-        // Update the message with the accumulated response so far.
-        setMessages((prevMessages) => [
-          ...prevMessages.slice(0, -1), // Removing the last "user" message to update it
-          { role: "user", content: userInput },
-          { role: "assistant", content: accumulatedResponse.trim() }
-        ]);
+        // Update the assistant's message with the latest chunk
+        setMessages((prevMessages) => {
+          // Get all messages except the last placeholder assistant message
+          const withoutLastAssistant = prevMessages.slice(0, prevMessages.length - 1);
+          return [
+            ...withoutLastAssistant,
+            { role: "assistant", content: currentAssistantResponse }
+          ];
+        });
+
+        console.log("Received chunk:", chunkValue); // Log each chunk received
       }
     }
-
-    console.log("Complete assistant response:", accumulatedResponse); // Log the concatenated assistant response
   
     setLoading(false);
   } catch (error) {
