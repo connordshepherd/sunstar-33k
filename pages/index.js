@@ -82,7 +82,7 @@ export default function Home() {
     
           console.log("Received chunk:", chunkValue); // Log each chunk received
     
-          const parsedChunk = JSON.parse(chunkValue.split("\n").filter(Boolean)[0]); // Parse each chunk
+          const parsedChunk = JSON.parse(chunkValue.replace("data: ", "").split("\n").filter(Boolean)[0]); // Parse each chunk
           if (parsedChunk && parsedChunk.choices && parsedChunk.choices[0] && parsedChunk.choices[0].delta && parsedChunk.choices[0].delta.content) {
             assistantResponse += parsedChunk.choices[0].delta.content;
           }
