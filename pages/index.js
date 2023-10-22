@@ -98,7 +98,7 @@ export default function Home() {
         console.log("Received chunk:", chunkValue); // Log each chunk received
       }
     }
-  
+    setUserInput("");
     setLoading(false);
   } catch (error) {
     console.error("Error during API fetch:", error); // Log any errors during fetch
