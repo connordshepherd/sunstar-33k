@@ -47,15 +47,15 @@ export default function Home() {
   const context = [...messages, { role: "user", content: userInput }];
   setMessages(context);
 
-  try {  
+  try {
     const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ messages: context }),
-        });
-  
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ messages: context }),
+    });
+
     if (!response.ok) {
       handleError();
       return;
@@ -74,22 +74,22 @@ export default function Home() {
     while (!done) {
       const { value, done: doneReading } = await reader.read();
       done = doneReading;
-  
+
       if (value) {
         const chunkValue = decoder.decode(value);
         accumulatedResponse += chunkValue;
         console.log("Received chunk:", chunkValue); // Log each chunk received
+
+        // Update the message with the accumulated response so far.
+        setMessages((prevMessages) => [
+          ...prevMessages.slice(0, -1), // Removing the last "user" message to update it
+          { role: "user", content: userInput },
+          { role: "assistant", content: accumulatedResponse.trim() }
+        ]);
       }
     }
-  
+
     console.log("Complete assistant response:", accumulatedResponse); // Log the concatenated assistant response
-  
-    if (accumulatedResponse.trim()) {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { role: "assistant", content: accumulatedResponse.trim() }
-      ]);
-    }
   
     setLoading(false);
   } catch (error) {
@@ -97,7 +97,6 @@ export default function Home() {
     handleError();
   }
 };
-
 
   // Prevent blank submissions and allow for multiline input
   const handleEnter = (e) => {
