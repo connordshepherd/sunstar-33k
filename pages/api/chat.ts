@@ -17,7 +17,7 @@ const handler = async (req: Request): Promise<Response> => {
         'Authorization': `Bearer ${process.env.BASEPLATE_API_KEY}`,
       },
       body: JSON.stringify({
-        messages: [body.messages],
+        messages: body.messages,
         stream: true,
       }),
     });
