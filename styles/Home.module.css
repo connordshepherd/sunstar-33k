@@ -208,7 +208,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
+  position: fixed;
+  bottom: 0px;
   padding: 2rem 0;
   flex-direction: column;
 }
