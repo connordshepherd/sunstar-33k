@@ -212,12 +212,12 @@
   bottom: 0px;
   padding: 2rem 0;
   flex-direction: column;
-  height:124px;
+  height:8rem;
 }
 
 .cloud {
   width: 75vw;
-  height: calc(92vh - 148px);
+  height: calc(100vh - 10rem);
   background: #fff;
   border-radius: 0.5rem;
   display: flex;
