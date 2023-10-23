@@ -4,8 +4,6 @@
   justify-content: space-between;
   align-items: center;
   padding: 2rem;
-  height: 100vh; /* Make sure it fills the screen */
-  box-sizing: border-box; /* Ensure padding doesn't increase the size */
 }
 
 .header {
@@ -207,12 +205,22 @@
 
 
 .center {
-  width: 100%; /* Make the input full width */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 2rem 0;
+  flex-direction: column;
 }
 
 .cloud {
-  flex: 1; /* Take up all available space */
-  overflow-y: scroll; /* To scroll if content exceeds height */
+  width: 75vw;
+  height: 80vh;
+  background: #fff;
+  border-radius: 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .pointsnormal {
@@ -245,30 +253,16 @@
 @media (max-width: 600px) {
 
   .main {
-  padding: 1rem;
-  height: 100vh; /* Make sure it fills the screen on mobile too */
+    padding: 1rem;
   }
 
   .cloud {
-    width: 100%; /* Make chat full width on mobile */
-    height: auto; /* Auto adjust height as needed */
+    width: 22rem;
+    height: 85vh;
   }
-  
   .textarea {
-    width: 90%; /* Adjust width to allow for side padding */
-    margin: 0 auto; /* Center the textarea */
+    width: 22rem;
   }
-
-  .center {
-    position: fixed; /* Fix the input to the bottom */
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 1rem 0; /* Optional padding to make it look better */
-    background-color: #fff; /* Or the background of your chat, to ensure it covers content behind */
-    z-index: 10; /* Keep it on top */
-  }
-  
   .topnav {
     border: 1px solid black;
     align-items: center;
