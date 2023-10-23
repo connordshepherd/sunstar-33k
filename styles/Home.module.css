@@ -260,7 +260,6 @@
 
   .cloud {
     width: 22rem;
-    height: calc(100vh - 148px);
   }
   .textarea {
     width: 22rem;
