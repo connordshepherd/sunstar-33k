@@ -132,7 +132,7 @@ export default function Home() {
               <div key={index} className={message.role === "user" && loading && index === messages.length - 1 ? styles.usermessagewaiting : message.role === "assistant" ? styles.apimessage : styles.usermessage}>
                 {/* Display the correct icon depending on the message type */}
                 {message.role === "assistant" ? 
-                  <Image src="/openai.png" alt="AI" width="30" height="30" className={styles.boticon} priority={true} /> 
+                  <Image src={process.env.NEXT_PUBLIC_IMAGE_SRC} alt="AI" width="30" height="30" className={styles.boticon} priority={true} /> 
                   : <Image src="/usericon.png" alt="Me" width="30" height="30" className={styles.usericon} priority={true} />}
                 <div className={styles.markdownanswer}>
                   <ReactMarkdown linkTarget={"_blank"}>{message.content}</ReactMarkdown>
