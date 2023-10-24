@@ -10,7 +10,7 @@ export default function Home() {
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([
-    { role: "assistant", content: `Ready and at your service. Ask me anything about your ${process.env.VEHICLE}!`  }
+    { role: "assistant", content: `Ready and at your service. Ask me anything about your ${process.env.NEXT_PUBLIC_VEHICLE}!`  }
   ]);
 
   const messageListRef = useRef(null);
