@@ -10,7 +10,7 @@ export default function Home() {
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([
-    { role: "assistant", content: "Hi there! How can I help?" }
+    { role: "assistant", content: "Ready and at your service. Ask me anything about your RV!" }
   ]);
 
   const messageListRef = useRef(null);
@@ -45,7 +45,7 @@ export default function Home() {
 
   setLoading(true);
   const userMessage = { role: "user", content: userInput };
-  const placeholderAssistantMessage = { role: "assistant", content: "Asking the AI..." };
+  const placeholderAssistantMessage = { role: "assistant", content: "..." };
 
   setMessages((prevMessages) => [
     ...prevMessages,
